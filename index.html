@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WWE Entrances</title>
+<style>
+    body {
+        font-family: Impact, Arial Black, sans-serif;
+        background: linear-gradient(180deg, #000 0%, #111 100%);
+        color: white;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+
+    h1 {
+        margin-bottom: 10px;
+        font-size: 42px;
+        color: #e10600;
+        text-shadow: 0 0 10px #e10600;
+    }
+
+    #randomBtn {
+        background: #e10600;
+        color: white;
+        padding: 15px 25px;
+        border: none;
+        border-radius: 10px;
+        font-size: 22px;
+        cursor: pointer;
+        margin-bottom: 25px;
+        transition: 0.2s;
+        box-shadow: 0 0 15px #e10600;
+    }
+
+    #randomBtn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px #ff2a2a;
+    }
+
+    #grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+
+    .wrestler-btn {
+        background: #222;
+        border: 2px solid #e10600;
+        padding: 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 20px;
+        color: white;
+        transition: 0.2s;
+        user-select: none;
+        text-transform: uppercase;
+        box-shadow: 0 0 10px #e10600;
+    }
+
+    .wrestler-btn:hover {
+        background: #333;
+        transform: scale(1.07);
+        box-shadow: 0 0 20px #ff2a2a;
+    }
+
+    #addForm {
+        margin-top: 40px;
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #e10600;
+        box-shadow: 0 0 15px #e10600;
+    }
+
+    input {
+        padding: 10px;
+        width: 80%;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #e10600;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        box-shadow: 0 0 10px #e10600;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px #ff2a2a;
+    }
+</style>
+</head>
+<body>
+
+<h1>WWE Entrance Videos</h1>
+
+<button id="randomBtn" onclick="randomEntrance()">🎲 Random Entrance</button>
+
+<div id="grid"></div>
+
+<div id="addForm">
+    <h2>Add Wrestler</h2>
+    <input id="nameInput" placeholder="Wrestler Name"><br>
+    <input id="urlInput" placeholder="YouTube URL"><br>
+    <button onclick="addWrestler()">Add</button>
+</div>
+
+<script>
+let wrestlers = JSON.parse(localStorage.getItem("wrestlers") || "[]");
+
+function save() {
+    localStorage.setItem("wrestlers", JSON.stringify(wrestlers));
+}
+
+function render() {
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
+    wrestlers.forEach((w, i) => {
+        const btn = document.createElement("div");
+        btn.className = "wrestler-btn";
+        btn.innerText = w.name;
+
+        // Play on normal click
+        btn.onclick = () => playVideo(w.url);
+
+        // Right-click to delete
+        btn.oncontextmenu = (e) => {
+            e.preventDefault();
+            removeWrestler(i);
+        };
+
+        // Long-press delete (touch screens)
+        let pressTimer;
+        btn.onmousedown = () => {
+            pressTimer = setTimeout(() => removeWrestler(i), 800);
+        };
+        btn.onmouseup = () => clearTimeout(pressTimer);
+        btn.onmouseleave = () => clearTimeout(pressTimer);
+
+        grid.appendChild(btn);
+    });
+}
+
+function addWrestler() {
+    const name = document.getElementById("nameInput").value.trim();
+    const url = document.getElementById("urlInput").value.trim();
+
+    if (!name || !url) return alert("Please enter both fields");
+
+    wrestlers.push({ name, url });
+    save();
+    render();
+
+    document.getElementById("nameInput").value = "";
+    document.getElementById("urlInput").value = "";
+}
+
+// Remove wrestler
+function removeWrestler(index) {
+    if (!confirm("Remove this wrestler?")) return;
+    wrestlers.splice(index, 1);
+    save();
+    render();
+}
+
+// Open normal YouTube page (works with ALL videos)
+function playVideo(url) {
+    window.open(url, "_blank");
+}
+
+// Random Entrance
+function randomEntrance() {
+    if (wrestlers.length === 0) {
+        alert("No wrestlers added yet!");
+        return;
+    }
+    const randomIndex = Math.floor(Math.random() * wrestlers.length);
+    playVideo(wrestlers[randomIndex].url);
+}
+
+render();
+</script>
+
+</body>
+</html>
+
